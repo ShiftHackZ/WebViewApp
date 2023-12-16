@@ -6,6 +6,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.webkit.*
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.annotation.RequiresApi
 
 class MainActivity : AppCompatActivity() {
@@ -25,16 +27,6 @@ class MainActivity : AppCompatActivity() {
             super.onReceivedError(view, request, error)
             error?.description?.toString()?.let(::showError)
         }
-
-        override fun onReceivedError(
-            view: WebView?,
-            errorCode: Int,
-            description: String?,
-            failingUrl: String?
-        ) {
-            super.onReceivedError(view, errorCode, description, failingUrl)
-            description?.let(::showError)
-        }
     }
 
     private val webView: WebView by lazy { findViewById(R.id.webView) }
@@ -43,17 +35,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        onBackPressedDispatcher.addCallback(this, true) {
+            if (webView.canGoBack()) webView.goBack()
+            else finish()
+        }
+
         webView.apply {
             settings.javaScriptEnabled = true
             webViewClient = appWebViewClient
             loadUrl(APP_URL)
-        }
-    }
-
-    override fun onBackPressed() {
-        when {
-            webView.canGoBack() -> webView.goBack()
-            else -> super.onBackPressed()
         }
     }
 
